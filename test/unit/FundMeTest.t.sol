@@ -21,6 +21,7 @@ contract FundMeTest is Test {
     MockV3Aggregator mockPriceFeed;
     address USER = makeAddr("user");
     uint256 constant SEND_VALUE = 10e18;
+    uint256 constant EXPECTED_CHAINLINK_VERSION = 4;
 
     receive() external payable {}
 
@@ -42,7 +43,7 @@ contract FundMeTest is Test {
 
     function testPriceFeedVersionIsAccurate() public {
         uint256 version = fundMe.getVersion();
-        assertEq(version, 4);
+        assertEq(version, EXPECTED_CHAINLINK_VERSION);
     }
 
     function testFundFailsWithoutEnoughETH() public {
