@@ -5,7 +5,10 @@ import {Script} from "lib/forge-std/src/Script.sol";
 import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
 
 contract HelperConfig is Script {
-    NetworkConfig public currentActiveNetworkConfig; // 正确缩进
+    NetworkConfig public currentActiveNetworkConfig;
+
+    uint8 public constant DECIMALS = 8;
+    int256 public constant INITIAL_PRICE = 2000e8;
 
     struct NetworkConfig { // 和变量同级缩进
         address priceFeed;
@@ -32,7 +35,10 @@ contract HelperConfig is Script {
         }
 
         vm.startBroadcast();
-        MockV3Aggregator mockPriceFeed = new MockV3Aggregator(8, 2000e8);
+        MockV3Aggregator mockPriceFeed = new MockV3Aggregator(
+            DECIMALS,
+            INITIAL_PRICE
+        );
         vm.stopBroadcast();
 
         return NetworkConfig({priceFeed: address(mockPriceFeed)});

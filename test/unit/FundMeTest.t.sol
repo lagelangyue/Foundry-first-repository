@@ -7,6 +7,15 @@ import {FundMe} from "../../src/FundMe.sol";
 import {DeployFundMe} from "../../script/DeployFundMe.s.sol";
 import "../mocks/MockV3Aggregator.sol";
 
+/*
+1.Unit测试：测试代码中特定部分
+2.Integration测试：测试代码中不同部分的交互
+3.Forked测试：在本地 fork 一个真实的链，测试与真实链的交互
+4.Staging测试：
+    - 在本地 fork 一个真实的链，测试与真实链的交互
+    - 但是在测试之前，先部署合约到真实链上
+*/
+
 contract FundMeTest is Test {
     FundMe fundMe;
     MockV3Aggregator mockPriceFeed;
@@ -15,6 +24,7 @@ contract FundMeTest is Test {
 
     receive() external payable {}
 
+    // 其他测试函数执行前运行，并设置测试环境
     function setUp() public {
         mockPriceFeed = new MockV3Aggregator(8, 2000e8);
         fundMe = new FundMe(address(mockPriceFeed));
