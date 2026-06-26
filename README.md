@@ -100,7 +100,7 @@ forge test -vvv
 
 3. **充值到合约**
    ```bash
-   # 需要先在 Makefile 中设置 SENDER_ADDRESS
+   # 需要先在 .env 文件中设置 SENDER_ADDRESS
    make fund
    ```
 
@@ -116,8 +116,10 @@ forge test -vvv
    cp .env.example .env
    # 编辑 .env 文件，填入以下配置：
    # SEPOLIA_RPC_URL=your_rpc_url
+   # SEPOLIA_PRIVATE_KEY=your_private_key
    # ACCOUNT=your_account_name
    # ETHERSCAN_API_KEY=your_etherscan_api_key
+   # SENDER_ADDRESS=your_sender_address（用于 fund/withdraw 命令）
    ```
 
 2. **部署到 Sepolia 测试网**
