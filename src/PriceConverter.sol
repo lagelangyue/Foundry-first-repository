@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {
-    AggregatorV3Interface
-} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 library PriceConverter {
-    function getPrice(
-        AggregatorV3Interface priceFeed
-    ) internal view returns (uint256) {
-        (, int256 answer, , , ) = priceFeed.latestRoundData();
+    function getPrice(AggregatorV3Interface priceFeed) internal view returns (uint256) {
+        (, int256 answer,,,) = priceFeed.latestRoundData();
         // ETH/USD rate in 18 digit
         // Safe conversion: require answer > 0 before casting
         require(answer > 0, "PriceFeed: invalid price");
@@ -19,10 +15,7 @@ library PriceConverter {
     // 1000000000
     // call it get fiatConversionRate, since it assumes something about decimals
     // It wouldn't work for every aggregator
-    function getConversionRate(
-        uint256 ethAmount,
-        AggregatorV3Interface priceFeed
-    ) internal view returns (uint256) {
+    function getConversionRate(uint256 ethAmount, AggregatorV3Interface priceFeed) internal view returns (uint256) {
         uint256 ethPrice = getPrice(priceFeed);
         // Use mulDiv for safe multiplication and division (avoids overflow)
         uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1e18;

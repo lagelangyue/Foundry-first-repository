@@ -75,6 +75,7 @@ contract FundMeTest is Test {
         fundMe.fund{value: SEND_VALUE}();
         _;
     }
+
     function testOnlyOwnerCanWithdraw() public funded {
         vm.prank(USER);
         vm.expectRevert();
@@ -93,10 +94,7 @@ contract FundMeTest is Test {
 
         // Assert
         assertEq(address(fundMe).balance, 0);
-        assertEq(
-            startingOwnerBalance + startingFundMeBalance,
-            fundMe.getOwner().balance
-        );
+        assertEq(startingOwnerBalance + startingFundMeBalance, fundMe.getOwner().balance);
     }
 
     function testWithdrawFromMultipleFunders() public funded {
@@ -121,10 +119,7 @@ contract FundMeTest is Test {
 
         // Assert
         assertEq(address(fundMe).balance, 0);
-        assertEq(
-            startingOwnerBalance + startingFundMeBalance,
-            fundMe.getOwner().balance
-        );
+        assertEq(startingOwnerBalance + startingFundMeBalance, fundMe.getOwner().balance);
 
         // 确保所有的 funder 的资金额都被重置为 0
         for (uint256 i = 1; i <= numberOfFunders; i++) {
