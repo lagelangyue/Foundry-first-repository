@@ -11,7 +11,9 @@ library PriceConverter {
     ) internal view returns (uint256) {
         (, int256 answer, , , ) = priceFeed.latestRoundData();
         // ETH/USD rate in 18 digit
-        return uint256(answer * 10000000000);
+        // Safe conversion: require answer > 0 before casting
+        require(answer > 0, "PriceFeed: invalid price");
+        return uint256(answer) * 10000000000;
     }
 
     // 1000000000
@@ -22,7 +24,8 @@ library PriceConverter {
         AggregatorV3Interface priceFeed
     ) internal view returns (uint256) {
         uint256 ethPrice = getPrice(priceFeed);
-        uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;
+        // Use mulDiv for safe multiplication and division (avoids overflow)
+        uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1e18;
         // the actual ETH/USD conversation rate, after adjusting the extra 0s.
         return ethAmountInUsd;
     }
