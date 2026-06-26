@@ -10,6 +10,29 @@ import {PriceConverter} from "./PriceConverter.sol";
 
 // 3. Interfaces, Libraries, Contracts
 error FundMe__NotOwner();
+error FundMe__NotEnoughBalance();
+error FundMe__CallFailed();
+
+/**
+ * @title ReentrancyGuard - Simple reentrancy protection
+ * @dev Prevents reentrant calls to functions
+ */
+abstract contract ReentrancyGuard {
+    uint256 private constant NOT_ENTERED = 1;
+    uint256 private constant ENTERED = 2;
+    uint256 private _status;
+
+    constructor() {
+        _status = NOT_ENTERED;
+    }
+
+    modifier nonReentrant() {
+        require(_status != ENTERED, "ReentrancyGuard: reentrant call");
+        _status = ENTERED;
+        _;
+        _status = NOT_ENTERED;
+    }
+}
 
 /**
  * @title A sample Funding Contract
@@ -17,7 +40,7 @@ error FundMe__NotOwner();
  * @notice This contract is for creating a sample funding contract
  * @dev This implements price feeds as our library
  */
-contract FundMe {
+contract FundMe is ReentrancyGuard {
     // Type Declarations
     using PriceConverter for uint256;
 
@@ -28,7 +51,9 @@ contract FundMe {
     mapping(address => uint256) private s_addressToAmountFunded;
     AggregatorV3Interface private s_priceFeed;
 
-    // Events (we have none!)
+    // Events
+    event Funded(address indexed funder, uint256 amount);
+    event Withdrawn(address indexed owner, uint256 amount);
 
     // Modifiers
     modifier onlyOwner() {
@@ -61,11 +86,13 @@ contract FundMe {
         // require(PriceConverter.getConversionRate(msg.value) >= MINIMUM_USD, "You need to spend more ETH!");
         s_addressToAmountFunded[msg.sender] += msg.value;
         s_funders.push(msg.sender);
+        emit Funded(msg.sender, msg.value);
     }
 
     // aderyn-ignore-next-line(centralization-risk,unused-public-function,state-change-without-event))
-    function withdraw() public onlyOwner {
+    function withdraw() public onlyOwner nonReentrant {
         // aderyn-ignore-next-line(storage-array-length-not-cached,costly-loop)
+        uint256 amount = address(this).balance;
         for (
             uint256 funderIndex = 0;
             funderIndex < s_funders.length;
@@ -77,12 +104,14 @@ contract FundMe {
         s_funders = new address[](0);
         // Transfer vs call vs Send
         // payable(msg.sender).transfer(address(this).balance);
-        (bool success, ) = i_owner.call{value: address(this).balance}("");
-        require(success);
+        (bool success, ) = i_owner.call{value: amount}("");
+        require(success, FundMe__CallFailed());
+        emit Withdrawn(msg.sender, amount);
     }
 
-    function cheaperWithdraw() public onlyOwner {
+    function cheaperWithdraw() public onlyOwner nonReentrant {
         address[] memory funders = s_funders;
+        uint256 amount = address(this).balance;
         // mappings can't be in memory, sorry!
         for (
             uint256 funderIndex = 0;
@@ -94,8 +123,9 @@ contract FundMe {
         }
         s_funders = new address[](0);
         // payable(msg.sender).transfer(address(this).balance);
-        (bool success, ) = i_owner.call{value: address(this).balance}("");
-        require(success);
+        (bool success, ) = i_owner.call{value: amount}("");
+        require(success, FundMe__CallFailed());
+        emit Withdrawn(msg.sender, amount);
     }
 
     /**
